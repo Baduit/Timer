@@ -12,13 +12,13 @@ uint64_t nanoToMilli(uint64_t nano)
 
 int	main()
 {
-/* 	std::cout << "SimpleClock" << std::endl;
+	std::cout << "SimpleClock" << std::endl;
 	SimpleClock sc;
 	std::this_thread::sleep_for(1s);
 	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
 	sc.reset();
 	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
-	std::cout << "End" << std::endl << std::endl; */
+	std::cout << "End" << std::endl << std::endl;
 
 	std::cout << "AdvancedClock" << std::endl;
 	AdvancedClock ac;
@@ -31,7 +31,7 @@ int	main()
 	std::this_thread::sleep_for(1s);
 	std::cout << nanoToMilli(ac.getTimeNanoCount()) << " milliseconds" << std::endl;
 	std::cout << "End" << std::endl << std::endl;
-/* 
+
 	std::cout << "ThreadTimer" << std::endl;
 	ThreadTimer tt;
 	auto future_result = tt.start(2s,
@@ -61,6 +61,6 @@ int	main()
 	);
 	std::this_thread::sleep_for(1s);
 	std::cout << "End" << std::endl;
- */
+
 	return 0;
 }
