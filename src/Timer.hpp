@@ -107,6 +107,8 @@ class AdvancedClock
 class Sleeper
 {
 	public:
+		Sleeper() = default;
+
 		template<typename D>
 		Sleeper(const D& duration)
 		{
@@ -167,10 +169,9 @@ class ThreadTimer
 		auto	start(const D& duration, Cb&& cb)
 		{
 			auto thread_cb = 
-				[this, duration, cb]()
+				[this, duration, moved_cb = std::move(cb)]()
 				{
-					auto moved_cb = std::move(cb);
-					std::this_thread::sleep_for(duration);
+					_sleeper(duration);
 					if (!_stop)
 						return moved_cb();
 					else
@@ -194,6 +195,7 @@ class ThreadTimer
 	private:
 		std::thread			_thread;
 		std::atomic<bool>	_stop = false;
+		Sleeper				_sleeper;
 };
 
 /*
@@ -220,12 +222,11 @@ class LoopThreadTimer
 		void	start(const D& duration, Cb&& cb)
 		{
 			auto thread_cb = 
-				[this, duration, cb]()
+				[this, duration, moved_cb = std::move(cb)]()
 				{
-					auto moved_cb = std::move(cb);
 					while (!_soft_stop)
 					{
-						std::this_thread::sleep_for(duration);
+						_sleeper(duration);
 						if (!_hard_stop)
 							moved_cb();
 						else
@@ -257,6 +258,7 @@ class LoopThreadTimer
 		std::thread			_thread;
 		std::atomic<bool>	_soft_stop = false;
 		std::atomic<bool>	_hard_stop = false;
+		Sleeper				_sleeper;
 };
 
 }
