@@ -23,6 +23,14 @@ class SimpleClock
 	public:
 		SimpleClock() { reset(); };
 
+		SimpleClock(const SimpleClock&) = default;
+		SimpleClock& operator=(const SimpleClock&) = default;
+
+		SimpleClock(SimpleClock&&) = default;
+		SimpleClock& operator=(SimpleClock&&) = default;
+
+		virtual ~SimpleClock() = default;
+
 		void		reset() { _first = std::chrono::system_clock::now(); }
 		
 		Duration	getTimeDuration() { return std::chrono::system_clock::now() - _first; }
@@ -45,6 +53,14 @@ class AdvancedClock
 {
 	public:
 		AdvancedClock() { reset(); }
+
+		AdvancedClock(const AdvancedClock&) = default;
+		AdvancedClock& operator=(const AdvancedClock&) = default;
+
+		AdvancedClock(AdvancedClock&&) = default;
+		AdvancedClock& operator=(AdvancedClock&&) = default;
+
+		virtual ~AdvancedClock() = default;
 
 		void		reset()
 		{
@@ -109,6 +125,17 @@ class Sleeper
 	public:
 		Sleeper() = default;
 
+		Sleeper(const Sleeper&) = delete;
+		Sleeper& operator=(const Sleeper&) = delete;
+
+		Sleeper(Sleeper&&) = delete;
+		Sleeper& operator=(Sleeper&&) = delete;
+
+		virtual ~Sleeper()
+		{
+			cancel_all();
+		}
+
 		template<typename D>
 		Sleeper(const D& duration)
 		{
@@ -153,6 +180,12 @@ class ThreadTimer
 {
 	public:
 		ThreadTimer() = default;
+
+		ThreadTimer(const ThreadTimer&) = delete;
+		ThreadTimer& operator=(const ThreadTimer&) = delete;
+
+		ThreadTimer(ThreadTimer&&) = delete;
+		ThreadTimer& operator=(ThreadTimer&&) = delete;
 
 		template<typename D, typename Cb>
 		ThreadTimer(const D& duration, Cb&& cb)
@@ -206,6 +239,12 @@ class LoopThreadTimer
 {
 	public:
 		LoopThreadTimer() = default;
+
+		LoopThreadTimer(const LoopThreadTimer&) = delete;
+		LoopThreadTimer& operator=(const LoopThreadTimer&) = delete;
+
+		LoopThreadTimer(LoopThreadTimer&&) = delete;
+		LoopThreadTimer& operator=(LoopThreadTimer&&) = delete;
 
 		template<typename D, typename Cb>
 		LoopThreadTimer(const D& duration, Cb&& cb)
