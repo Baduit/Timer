@@ -215,7 +215,7 @@ class LoopThreadTimer
 
 		virtual ~LoopThreadTimer()
 		{
-			hard_stop();
+			stop();
 		}
 
 		template<typename D, typename Cb>
@@ -224,13 +224,11 @@ class LoopThreadTimer
 			auto thread_cb = 
 				[this, duration, moved_cb = std::move(cb)]()
 				{
-					while (!_soft_stop)
+					while (!_stop)
 					{
 						_sleeper(duration);
-						if (!_hard_stop)
+						if (!_stop)
 							moved_cb();
-						else
-							break;
 					}
 				};
 			auto task = std::packaged_task<decltype(thread_cb())()>(std::forward<decltype(thread_cb)>(thread_cb));
@@ -238,26 +236,16 @@ class LoopThreadTimer
 			_thread = std::thread(std::move(task));
 		}
 
-		// call the callback a last time
-		void	soft_stop()
+		void	stop()
 		{
-			_soft_stop = true;
-			if (_thread.joinable())
-				_thread.join();
-		}
-
-		// does call the callback a last time
-		void	hard_stop()
-		{
-			_hard_stop = true;
+			_stop = true;
 			if (_thread.joinable())
 				_thread.join();
 		}
 
 	private:
 		std::thread			_thread;
-		std::atomic<bool>	_soft_stop = false;
-		std::atomic<bool>	_hard_stop = false;
+		std::atomic<bool>	_stop { false };
 		Sleeper				_sleeper;
 };
 
