@@ -26,8 +26,20 @@ add_executable(timer_example src/main.cpp)
 # Tests
 enable_testing()
 
-add_executable(test_timer.out src/test.cpp)
-add_test(test_timer test_timer.out)
+add_executable(simple_clock.out tests/simple_clock.cpp)
+add_test(simple_clock simple_clock.out)
+
+add_executable(advanced_clock.out tests/advanced_clock.cpp)
+add_test(advanced_clock advanced_clock.out)
+
+add_executable(sleeper.out tests/sleeper.cpp)
+add_test(sleeper sleeper.out)
+
+add_executable(thread_timer.out tests/thread_timer.cpp)
+add_test(thread_timer thread_timer.out)
+
+add_executable(loop_thread_timer.out tests/loop_thread_timer.cpp)
+add_test(loop_thread_timer loop_thread_timer.out)
 
 # This is a header only library
 add_library(TimerLib INTERFACE)
