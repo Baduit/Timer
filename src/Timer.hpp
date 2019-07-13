@@ -7,6 +7,7 @@
 #include <thread>
 #include <future>
 #include <atomic>
+#include <condition_variable>
 
 namespace Timer
 {
@@ -29,7 +30,7 @@ class SimpleClock
 		template<typename T>
 		auto		getDuractionAs() { return std::chrono::duration_cast<T>(getTimeDuration()); }
 
-		uint64_t	getTimeNanoCount() { return getDuractionAs<std::chrono::nanoseconds>().count(); }
+		int64_t		getTimeNanoCount() { return getDuractionAs<std::chrono::nanoseconds>().count(); }
 
 	private:
 		std::chrono::system_clock::time_point _first;
@@ -49,7 +50,7 @@ class AdvancedClock
 		{
 			_run_timer.reset();
 			_pause_timer.reset();
-			_paused_time.clear();
+			_paused_time = {};
 		}
 		
 		auto		getTimeDuration()
@@ -63,7 +64,7 @@ class AdvancedClock
 			return _run_timer.getDuractionAs<T>() - getTotalPauseTimeAs<T>();
 		}
 
-		uint64_t	getTimeNanoCount()
+		int64_t		getTimeNanoCount()
 		{
 			return _run_timer.getTimeNanoCount() - getTotalPauseTimeNanoCount();
 		}
@@ -78,32 +79,26 @@ class AdvancedClock
 		{
 			if (_pause_timer.has_value())
 			{
-				_paused_time.push_back(_pause_timer->getTimeDuration());
+				_paused_time += _pause_timer->getTimeDuration();
 				_pause_timer.reset();
 			}
 		}
 
 		Duration	getTotalPauseTime()
 		{
-			// ugly but it works to initialize a Duration with the value 0
-			Duration total_paused_time = std::chrono::system_clock::now() - std::chrono::system_clock::now();
-			for (const auto& t: _paused_time)
-				total_paused_time += t;
-			if (_pause_timer.has_value())
-				total_paused_time += _pause_timer->getTimeDuration();
-			return total_paused_time;
+			return (_pause_timer.has_value()) ? _paused_time + _pause_timer->getTimeDuration() : _paused_time;
 		}
 
 		template<typename T>
 		auto 	getTotalPauseTimeAs() { return std::chrono::duration_cast<T>(getTotalPauseTime()); }
 
 
-		uint64_t	getTotalPauseTimeNanoCount() { return getTotalPauseTimeAs<std::chrono::nanoseconds>().count(); }
+		int64_t	getTotalPauseTimeNanoCount() { return getTotalPauseTimeAs<std::chrono::nanoseconds>().count(); }
 
 	private:
-		SimpleClock										_run_timer;
-		std::optional<SimpleClock>						_pause_timer;
-		std::vector<Duration>							_paused_time;
+		SimpleClock							_run_timer;
+		std::optional<SimpleClock>			_pause_timer;
+		Duration							_paused_time;
 };
 
 /*
@@ -119,7 +114,7 @@ class ThreadTimer
 		ThreadTimer(const D& duration, Cb&& cb)
 		{
 			start(duration, std::move(cb));
-		};
+		}
 
 		virtual ~ThreadTimer()
 		{
@@ -172,7 +167,7 @@ class LoopThreadTimer
 		LoopThreadTimer(const D& duration, Cb&& cb)
 		{
 			start(duration, std::move(cb));
-		};
+		}
 
 		virtual ~LoopThreadTimer()
 		{

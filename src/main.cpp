@@ -5,7 +5,7 @@
 using namespace Timer;
 using namespace std::chrono_literals;
 
-uint64_t nanoToMilli(uint64_t nano)
+int64_t nanoToMilli(int64_t nano)
 {
 	return nano / 1000000;
 }
