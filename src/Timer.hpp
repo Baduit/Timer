@@ -102,6 +102,48 @@ class AdvancedClock
 };
 
 /*
+** Make a thread sleep, same as std::this_thread::sleep_for but cancelable
+*/
+class Sleeper
+{
+	public:
+		template<typename D>
+		Sleeper(const D& duration)
+		{
+			sleep(duration);
+		}
+
+		template<typename D>
+		void	operator()(const D& duration)
+		{
+			sleep(duration);
+		}
+
+		template<typename D>
+		void	sleep(const D& duration)
+		{
+			std::unique_lock lock(_mutex);
+			_cv.wait_for(lock, duration);
+		}
+
+		// Use it if you want to awake only one thread sleeping
+		void	cancel_one()
+		{
+			_cv.notify_one();
+		}
+
+		// Use it if you cant to awake all the sleeping threads (one or more)
+		void	cancel_all()
+		{
+			_cv.notify_all();
+		}
+
+	private:
+		std::mutex				_mutex;
+		std::condition_variable	_cv;
+};
+
+/*
 ** Execute an action at the end of the choosed duration.
 ** For the moment it can't be paused.
 */
