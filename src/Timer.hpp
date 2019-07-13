@@ -221,6 +221,7 @@ class ThreadTimer
 		void	stop()
 		{
 			_stop = true;
+			_sleeper.cancel_all();
 			if (_thread.joinable())
 				_thread.join();
 		}
@@ -278,6 +279,7 @@ class LoopThreadTimer
 		void	stop()
 		{
 			_stop = true;
+			_sleeper.cancel_all();
 			if (_thread.joinable())
 				_thread.join();
 		}
