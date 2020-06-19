@@ -33,6 +33,8 @@
 
 #cmake build
 build
+linux_build
+windows_build
 
 #vscode
 .vscode
