@@ -1,7 +1,7 @@
 #include <cassert>
 #include <thread>
 
-#include "Timer.hpp"
+#include <Timer.hpp>
 
 using namespace std::chrono_literals;
 
