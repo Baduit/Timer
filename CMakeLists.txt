@@ -32,15 +32,6 @@ add_test(simple_clock simple_clock.out)
 add_executable(advanced_clock.out tests/advanced_clock.cpp)
 add_test(advanced_clock advanced_clock.out)
 
-add_executable(sleeper.out tests/sleeper.cpp)
-add_test(sleeper sleeper.out)
-
-add_executable(thread_timer.out tests/thread_timer.cpp)
-add_test(thread_timer thread_timer.out)
-
-add_executable(loop_thread_timer.out tests/loop_thread_timer.cpp)
-add_test(loop_thread_timer loop_thread_timer.out)
-
 # This is a header only library
 add_library(TimerLib INTERFACE)
 target_sources(TimerLib INTERFACE Timer.hpp)
