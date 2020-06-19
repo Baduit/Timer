@@ -5,31 +5,6 @@
 
 using namespace std::chrono_literals;
 
-
-// Helper(s)
-namespace
-{
-
-int64_t nanoToMilli(int64_t nano)
-{
-	return nano / 1000000;
-}
-
-}
-
-// Tests
-
-void basic_usage()
-{
-
-	Timer::SimpleClock sc;
-	std::this_thread::sleep_for(10ms);
-	assert(nanoToMilli(sc.getTimeNanoCount()) == 10);
-
-	sc.reset();
-	assert(sc.getDuractionAs<std::chrono::milliseconds>().count() == 0);
-}
-
 void copy()
 {
 	{
@@ -54,6 +29,5 @@ void copy()
 
 int main()
 {
-	basic_usage();
 	copy();
 }
