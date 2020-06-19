@@ -5,7 +5,7 @@
 using namespace Timer;
 using namespace std::chrono_literals;
 
-int64_t nanoToMilli(int64_t nano)
+int64_t nano_to_milli(int64_t nano)
 {
 	return nano / 1000000;
 }
@@ -16,10 +16,10 @@ void exampleSimpleClock()
 
 	SimpleClock sc;
 	std::this_thread::sleep_for(1s);
-	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(sc.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	sc.reset();
-	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(sc.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	std::cout << "End" << std::endl << std::endl;
 }
@@ -30,15 +30,15 @@ void exampleAdvancedClock()
 
 	AdvancedClock ac;
 	std::this_thread::sleep_for(1s);
-	std::cout << nanoToMilli(ac.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(ac.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	ac.pause();
 	std::this_thread::sleep_for(1s);
-	std::cout << nanoToMilli(ac.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(ac.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	ac.start();
 	std::this_thread::sleep_for(1s);
-	std::cout << nanoToMilli(ac.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(ac.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	std::cout << "End" << std::endl << std::endl;
 }
@@ -49,7 +49,7 @@ void exampleSleeper()
 
 	SimpleClock sc;
 	Sleeper	sleeper(1s);
-	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(sc.get_time_nano_count()) << " milliseconds" << std::endl;
 
 	std::thread thread(
 		[&]
@@ -60,7 +60,7 @@ void exampleSleeper()
 	);
 	sc.reset();
 	sleeper(1s);
-	std::cout << nanoToMilli(sc.getTimeNanoCount()) << " milliseconds" << std::endl;
+	std::cout << nano_to_milli(sc.get_time_nano_count()) << " milliseconds" << std::endl;
 	thread.join();
 
 

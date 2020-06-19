@@ -8,6 +8,7 @@
 #include <future>
 #include <atomic>
 #include <condition_variable>
+#include <type_traits>
 
 namespace Timer
 {
@@ -33,12 +34,12 @@ class SimpleClock
 
 		void		reset() { _first = std::chrono::system_clock::now(); }
 		
-		Duration	getTimeDuration() { return std::chrono::system_clock::now() - _first; }
+		Duration	get_time_duration() { return std::chrono::system_clock::now() - _first; }
 
 		template<typename T>
-		auto		getDuractionAs() { return std::chrono::duration_cast<T>(getTimeDuration()); }
+		auto		get_duration_as() { return std::chrono::duration_cast<T>(get_time_duration()); }
 
-		int64_t		getTimeNanoCount() { return getDuractionAs<std::chrono::nanoseconds>().count(); }
+		int64_t		get_time_nano_count() { return get_duration_as<std::chrono::nanoseconds>().count(); }
 
 	private:
 		std::chrono::system_clock::time_point _first;
@@ -69,20 +70,20 @@ class AdvancedClock
 			_paused_time = {};
 		}
 		
-		auto		getTimeDuration()
+		auto		get_time_duration()
 		{
-			return _run_timer.getTimeDuration() - getTotalPauseTime();
+			return _run_timer.get_time_duration() - get_total_pause_time();
 		}
 
 		template<typename T>
-		auto		getDuractionAs()
+		auto		get_duration_as()
 		{
-			return _run_timer.getDuractionAs<T>() - getTotalPauseTimeAs<T>();
+			return _run_timer.get_duration_as<T>() - get_total_pause_time_as<T>();
 		}
 
-		int64_t		getTimeNanoCount()
+		int64_t		get_time_nano_count()
 		{
-			return _run_timer.getTimeNanoCount() - getTotalPauseTimeNanoCount();
+			return _run_timer.get_time_nano_count() - get_total_pause_time_nano_count();
 		}
 
 		void		pause()
@@ -95,21 +96,21 @@ class AdvancedClock
 		{
 			if (_pause_timer.has_value())
 			{
-				_paused_time += _pause_timer->getTimeDuration();
+				_paused_time += _pause_timer->get_time_duration();
 				_pause_timer.reset();
 			}
 		}
 
-		Duration	getTotalPauseTime()
+		Duration	get_total_pause_time()
 		{
-			return (_pause_timer.has_value()) ? _paused_time + _pause_timer->getTimeDuration() : _paused_time;
+			return (_pause_timer.has_value()) ? _paused_time + _pause_timer->get_time_duration() : _paused_time;
 		}
 
 		template<typename T>
-		auto 	getTotalPauseTimeAs() { return std::chrono::duration_cast<T>(getTotalPauseTime()); }
+		auto 	get_total_pause_time_as() { return std::chrono::duration_cast<T>(get_total_pause_time()); }
 
 
-		int64_t	getTotalPauseTimeNanoCount() { return getTotalPauseTimeAs<std::chrono::nanoseconds>().count(); }
+		int64_t	get_total_pause_time_nano_count() { return get_total_pause_time_as<std::chrono::nanoseconds>().count(); }
 
 	private:
 		SimpleClock							_run_timer;
@@ -172,6 +173,13 @@ class Sleeper
 		std::condition_variable	_cv;
 };
 
+
+enum class ActionOnDtor
+{
+	JOIN,
+	STOP
+};
+
 /*
 ** Execute an action at the end of the choosed duration.
 ** For the moment it can't be paused.
@@ -190,7 +198,7 @@ class ThreadTimer
 		template<typename D, typename Cb>
 		ThreadTimer(const D& duration, Cb&& cb)
 		{
-			start(duration, std::move(cb));
+			start(duration, std::forward<Cb>(cb));
 		}
 
 		virtual ~ThreadTimer()
@@ -202,7 +210,7 @@ class ThreadTimer
 		auto	start(const D& duration, Cb&& cb)
 		{
 			auto thread_cb = 
-				[this, duration, moved_cb = std::move(cb)]()
+				[this, duration, moved_cb = std::forward<Cb>(cb)]()
 				{
 					_sleeper(duration);
 					if (!_stop)
@@ -217,13 +225,18 @@ class ThreadTimer
 			return future;
 		}
 
+		void	join()
+		{
+			if (_thread.joinable())
+			_thread.join();
+		}
+
 		// by calling this function while the timer is started, future used as result for the callback is unitialized
 		void	stop()
 		{
 			_stop = true;
 			_sleeper.cancel_all();
-			if (_thread.joinable())
-				_thread.join();
+			join();
 		}
 
 	private:
@@ -239,6 +252,13 @@ class ThreadTimer
 class LoopThreadTimer
 {
 	public:
+		enum class LoopStatus
+		{
+			CONTINUE,
+			STOP
+		};
+
+	public:
 		LoopThreadTimer() = default;
 
 		LoopThreadTimer(const LoopThreadTimer&) = delete;
@@ -250,7 +270,7 @@ class LoopThreadTimer
 		template<typename D, typename Cb>
 		LoopThreadTimer(const D& duration, Cb&& cb)
 		{
-			start(duration, std::move(cb));
+			start(duration, std::forward<Cb>(cb));
 		}
 
 		virtual ~LoopThreadTimer()
@@ -262,13 +282,24 @@ class LoopThreadTimer
 		void	start(const D& duration, Cb&& cb)
 		{
 			auto thread_cb = 
-				[this, duration, moved_cb = std::move(cb)]()
+				[this, duration, moved_cb = std::forward<Cb>(cb)]()
 				{
 					while (!_stop)
 					{
 						_sleeper(duration);
 						if (!_stop)
-							moved_cb();
+						{
+							using CbReturnType = std::invoke_result_t<Cb>;
+							if constexpr (std::is_same_v<CbReturnType, LoopStatus>)
+							{
+								if (moved_cb() == LoopStatus::STOP)
+									stop();
+							}
+							else
+							{
+								moved_cb();
+							}
+						}
 					}
 				};
 			auto task = std::packaged_task<decltype(thread_cb())()>(std::forward<decltype(thread_cb)>(thread_cb));
@@ -276,12 +307,17 @@ class LoopThreadTimer
 			_thread = std::thread(std::move(task));
 		}
 
+		void	join()
+		{
+			if (_thread.joinable())
+			_thread.join();
+		}
+
 		void	stop()
 		{
 			_stop = true;
 			_sleeper.cancel_all();
-			if (_thread.joinable())
-				_thread.join();
+			join();
 		}
 
 	private:

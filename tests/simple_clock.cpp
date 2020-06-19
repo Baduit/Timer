@@ -12,7 +12,7 @@ void copy()
 		std::this_thread::sleep_for(20ms);
 
 		Timer::SimpleClock sc2(sc1);
-		assert(sc1.getDuractionAs<std::chrono::milliseconds>().count() == sc2.getDuractionAs<std::chrono::milliseconds>().count());
+		assert(sc1.get_duration_as<std::chrono::milliseconds>().count() == sc2.get_duration_as<std::chrono::milliseconds>().count());
 	}
 
 	{
@@ -22,7 +22,7 @@ void copy()
 		Timer::SimpleClock sc2;
 		std::this_thread::sleep_for(20ms);
 		sc2 = sc1;
-		assert(sc1.getDuractionAs<std::chrono::milliseconds>().count() == sc2.getDuractionAs<std::chrono::milliseconds>().count());
+		assert(sc1.get_duration_as<std::chrono::milliseconds>().count() == sc2.get_duration_as<std::chrono::milliseconds>().count());
 	}
 	
 }
