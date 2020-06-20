@@ -42,7 +42,7 @@ class SimpleClock
 		int64_t		get_time_nano_count() { return get_duration_as<std::chrono::nanoseconds>().count(); }
 
 	private:
-		std::chrono::system_clock::time_point _first;
+		std::chrono::system_clock::time_point	_first;
 };
 
 /*
@@ -113,9 +113,9 @@ class AdvancedClock
 		int64_t	get_total_pause_time_nano_count() { return get_total_pause_time_as<std::chrono::nanoseconds>().count(); }
 
 	private:
-		SimpleClock							_run_timer;
-		std::optional<SimpleClock>			_pause_timer;
-		Duration							_paused_time;
+		SimpleClock					_run_timer;
+		std::optional<SimpleClock>	_pause_timer;
+		Duration					_paused_time;
 };
 
 /*
@@ -291,7 +291,7 @@ class ThreadTimer
 						return decltype(moved_cb())();
 				};
 			auto task = std::packaged_task<decltype(thread_cb())()>(std::forward<decltype(thread_cb)>(thread_cb));
-    		auto future = task.get_future();
+			auto future = task.get_future();
 		
 			_thread = std::thread(std::move(task));
 			return future;
