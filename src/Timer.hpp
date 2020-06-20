@@ -119,7 +119,7 @@ class AdvancedClock
 };
 
 /*
-** Make a thread sleep, same as std::this_thread::sleep_for but cancelable
+** Make a thread sleep, same as std::this_thread::sleep_for but cancelable.
 */
 class Sleeper
 {
@@ -174,7 +174,7 @@ class Sleeper
 };
 
 /*
-** Execute an action at the end of the choosed duration in a loop in the current thread
+** Execute an action at the end of the choosed duration in a loop in the current thread.
 ** For the moment it can't be paused.
 */
 class Poller
